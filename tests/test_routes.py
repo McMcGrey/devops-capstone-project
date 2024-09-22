@@ -128,15 +128,31 @@ class TestAccountService(TestCase):
     def test_get_acount_list(self):
         """It should Get a list of Acounts"""
         self._create_accounts(10)
-        response = self.client.get(BASE_URL)
+        response = self.client.get(BASE_URL, content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 10)
 
     def test_get_empty_acount_list(self):
         """It should Get an empty list of Acounts"""
-        response = self.client.get(BASE_URL)
+        response = self.client.get(BASE_URL, content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 0)
         self.assertEqual(data, [])
+
+    def test_get_account(self):
+        """It should Read a single Account"""
+        account = self._create_accounts(1)[0]
+        response = self.client.get(
+            f"{BASE_URL}/{account.id}",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], account.name)
+
+    def test_get_account_not_found(self):
+        """It should not Read an Account that is not found"""
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
